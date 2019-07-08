@@ -33,7 +33,7 @@
         <div class="ui grid custom-grid">
             <div class="two column row" ng-show="templatesScreen">
                 <div class="twelve wide column" id="templatsCards">
-                    <div class="ui five stackable cards">
+                    <div class="ui six stackable cards">
                         <div class="card card-hover-effect" ng-repeat="(key, value) in questionTemplates">
                             <div class="image">
                                 <img src="{{value.thumbnail1}}"/>
@@ -78,7 +78,7 @@
                         <div class="preview-heading">
                             <h3 class="ui left floated previewHeading">Preview</h3>
                             <button class="ui right floated blue button" ng-click="showPreview();generateTelemetry({type: 'TOUCH', id: 'button', target: {id: 'question-preview', ver: '', type: 'button'}})">Refresh</button>
-                            <div class="ui small blue message">
+                            <div class="ui small blue message">{{selectedTemplatePluginData.plugin.id}}
                                 {{messages.previewMessage}}
                             </div>
                         </div>
@@ -90,7 +90,7 @@
                         </div>
                     </div>
                     <div class="previewAreaHead" ng-init="loadDropdown()"
-                         ng-show="selectedTemplatePluginData.plugin.id == 'org.ekstep.questionunit.mcq'">
+                         ng-show="selectedTemplatePluginData.plugin.id == 'org.ekstep.questionunit.mcq' && selectedTemplatePluginData.plugin.id == 'org.ekstep.questionunit.survey' && selectedTemplatePluginData.plugin.id == 'org.ekstep.questionunit.feedback'">
                         <div class="preview-heading">
                             <h3 class="ui left floated previewHeading">Configuration</h3>
                         </div>
@@ -116,7 +116,7 @@
                         </div>
                     </div>
                     <div class="previewAreaHead"
-                         ng-show="selectedTemplatePluginData.plugin.id != 'org.ekstep.questionunit.mcq' && selectedTemplatePluginData.plugin.id != 'org.ekstep.questionunit.reorder'">
+                         ng-show="selectedTemplatePluginData.plugin.id != 'org.ekstep.questionunit.mcq' && selectedTemplatePluginData.plugin.id == 'org.ekstep.questionunit.survey' && selectedTemplatePluginData.plugin.id == 'org.ekstep.questionunit.feedback' && selectedTemplatePluginData.plugin.id != 'org.ekstep.questionunit.reorder'">
                         <div class="preview-heading">
                             <h3 class="ui center floated previewHeading">Configuration</h3>
                         </div>

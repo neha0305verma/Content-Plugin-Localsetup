@@ -157,6 +157,8 @@ angular.module('mcqApp', ['org.ekstep.question']).controller('mcqQuestionFormCon
       _.each($scope.mcqFormData.options, function (k, v) { // eslint-disable-line no-unused-vars
         if (k.isCorrect) {
           valid = true;
+        }else {
+          valid = true;
         }
       });
     }

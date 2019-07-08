@@ -95,6 +95,7 @@ angular.module('mcqApp', ['org.ekstep.question']).controller('mcqQuestionFormCon
     $scope.mcqPluginInstance = org.ekstep.pluginframework.pluginManager.getPluginManifest("org.ekstep.questionunit.mcq")
     EventBus.listeners['org.ekstep.questionunit.mcq:validateform'] = [];
     ecEditor.addEventListener('org.ekstep.questionunit.mcq:validateform', function (event, callback) {
+      // debugger;
       var validationRes = $scope.formValidation();
       callback(validationRes.isValid, validationRes.formData);
     }, $scope);
@@ -107,6 +108,7 @@ angular.module('mcqApp', ['org.ekstep.question']).controller('mcqQuestionFormCon
     var qdata = data.data;
     $scope.mcqFormData.question = qdata.question;
     $scope.mcqFormData.options = qdata.options;
+    console.log('mcq foem data', $scope.mcqFormData.question,  $scope.mcqFormData.options = qdata.options)
     $scope.editMedia = qdata.media;
     var opLength = qdata.length;
     if (opLength > 2) {
@@ -138,8 +140,10 @@ angular.module('mcqApp', ['org.ekstep.question']).controller('mcqQuestionFormCon
     $scope.BindCkeditor();
   }
   $scope.formValidation = function () {
+    console.log('mcq controller');
     var opSel = false;
     var valid = false;
+    // debugger;
     var formValid = $scope.mcqForm.$valid && $scope.mcqFormData.options.length > 1;
     $scope.submitted = true;
     if (!($scope.mcqFormData.question.text.length || $scope.mcqFormData.question.image.length || $scope.mcqFormData.question.audio.length)) {
@@ -150,6 +154,7 @@ angular.module('mcqApp', ['org.ekstep.question']).controller('mcqQuestionFormCon
     if (!_.isUndefined($scope.selectedOption)) {
       _.each($scope.mcqFormData.options, function (k, v) {
         $scope.mcqFormData.options[v].isCorrect = false;
+        console.log('checking');
       });
       valid = true;
       $scope.mcqFormData.options[$scope.selectedOption].isCorrect = true;

@@ -42,6 +42,7 @@ org.ekstep.contenteditor.basePlugin.extend({
      *   @memberof preview
      */
     initPreview: function (event, data) {
+        console.log('data', data);
         this.contentBody = data.contentBody;
         if (data.currentStage) {
             this.contentBody.theme.startStage = ecEditor.getCurrentStage().id;

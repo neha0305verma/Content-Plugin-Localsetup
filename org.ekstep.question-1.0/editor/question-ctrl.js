@@ -45,6 +45,7 @@ angular.module('org.ekstep.question', ['org.ekstep.metadataform'])
   };
 	$scope.init = function () {
 		ecEditor.addEventListener('editor:template:loaded', function (event, object) {
+      // debugger;
 			if(object.formAction == 'question-meta-save') {
         ecEditor.dispatchEvent('metadata:controller:init');
 				$scope.metadataform = object.templatePath;
@@ -73,16 +74,20 @@ angular.module('org.ekstep.question', ['org.ekstep.metadataform'])
 	$scope.showTemplates = function() {
     $scope.templatesScreen = true;
     $scope.questionMetadataScreen = false;
+    // debugger;
     if ($scope.questionTemplates.length == 0) {
+      console.log('question', $scope.questionTemplates);
       var PluginsData = [];
       ecEditor.dispatchEvent($scope._constants.questionsetPlugin + ":getPlugins", function(pluginData) {
         PluginsData = pluginData;
       });
+      console.log('plugin data', PluginsData);
       _.each(PluginsData, function(val, key) { // eslint-disable-line no-unused-vars
         if (val.contentType == "Plugin") {
           var pluginManifest = org.ekstep.pluginframework.pluginManager.getPluginManifest(val.identifier);
           var pluginID = val.identifier;
           var ver = val.semanticVersion;
+          // console.log('value',val,'key',key);
           if (!_.isUndefined(pluginManifest)) {
             if (!_.isUndefined(pluginManifest.templates)) {
               _.each(pluginManifest.templates, function(v, k) { // eslint-disable-line no-unused-vars
@@ -92,6 +97,7 @@ angular.module('org.ekstep.question', ['org.ekstep.metadataform'])
                 v.thumbnail1 = thumbnail;
                 var allMenus = v;
                 $scope.questionTemplates.push(allMenus);
+                // console.log('question',val,key, $scope.questionTemplates);
               });
             } else {
               $scope.templatesNotFound = "There are no templates available";
@@ -121,18 +127,23 @@ angular.module('org.ekstep.question', ['org.ekstep.metadataform'])
 		$scope.questionUnitTemplateURL = templatePath + '?BUILDNUMBER';
 	}
 	$scope.showMetaform = function () {
-		$scope.refreshPreview = false;
+    $scope.refreshPreview = false;
 		$scope.validateQuestionCreationForm();
 	}
 	$scope.createPluginInstance = function(pluginId){
+    console.log('plugin',pluginId);
+    // debugger;
 		return ecEditor.instantiatePlugin(pluginId);
 	}
 	$scope.validateQuestionCreationForm = function(){
   	var pluginInstance = $scope.createPluginInstance($scope.selectedTemplatePluginData.plugin.id); // Plugin id is based on template choosen
-  	pluginInstance.validateForm($scope.validatedForm);
+  console.log('pluginid ', pluginInstance,$scope.validateForm);
+  debugger;
+    pluginInstance.validateForm($scope.validatedForm);
   }
 
   $scope.validatedForm = function(isFormValid,data){
+    console.log('validate',isFormValid,data);
   	if(isFormValid){
   		$scope.questionCreationFormData = data;
   		$scope.setPreviewData();
@@ -144,11 +155,15 @@ angular.module('org.ekstep.question', ['org.ekstep.metadataform'])
   $scope.getPreviewInstance = function(){
     var pluginInstances = ecEditor.getPluginInstances();
     var previewInstance = _.find(pluginInstances, function (pi) {
+      console.log('pi', pi, $scope._constants.previewPlugin);
       return pi.manifest.id === $scope._constants.previewPlugin
     });
+    console.log('preview instance', previewInstance);
     if (_.isUndefined(previewInstance)) {
+      console.log('preview instance inside if');
       previewInstance = $scope.createPluginInstance($scope._constants.previewPlugin);
     }
+    console.log('preview instance 2', previewInstance);
     return previewInstance;
   }
   $scope.setPreviewData = function () {
@@ -167,10 +182,13 @@ angular.module('org.ekstep.question', ['org.ekstep.metadataform'])
       "org.ekstep.questionset": {}
     };
     questions.push(qObj);
+    console.log('questions',questions);
     data[$scope._constants.questionsetPlugin][$scope._constants.questionPlugin] = questions;
     confData = {"contentBody": {}, "parentElement": true, "element": "#iframeArea"};
+    // debugger;
     var previewInstance = $scope.getPreviewInstance();
     confData.contentBody = previewInstance.getQuestionPreviwContent(data[$scope._constants.questionsetPlugin]);
+    console.log('contentboby', confData);
     ecEditor.dispatchEvent("atpreview:show", confData);
   };
   $scope.resetPreview = function(){
@@ -222,6 +240,7 @@ angular.module('org.ekstep.question', ['org.ekstep.metadataform'])
 
 
       for (var key in $scope.questionData) {
+        // console.log('metadata', $scope.questionMetaData, $scope.questionData);
         if ($scope.questionData.hasOwnProperty(key)) {
           if (key == 'title') {
             $scope.questionMetaData['name'] = $scope.questionData['title'];
@@ -235,11 +254,12 @@ angular.module('org.ekstep.question', ['org.ekstep.metadataform'])
       if ($scope.questionMetaData.topic) {
         $scope.questionMetaData.topicData = "(" + $scope.questionData.topic.length + ") topics selected";
       }
+      // debugger;
     ecEditor.dispatchEvent('org.ekstep.editcontentmeta:showpopup', {
     	action: 'question-meta-save',
     	subType: 'questions',
     	framework: ecEditor.getContext('framework'),
-    	rootOrgId: ecEditor.getContext('channel'),
+    	rootOrgId: "0127053482034872320",
     	type: 'content',
     	popup: false,
     	metadata: $scope.questionMetaData
@@ -251,7 +271,9 @@ angular.module('org.ekstep.question', ['org.ekstep.metadataform'])
       EventBus.listeners["org.ekstep.questionunit:ready"]=[];
     }
   	var formElement = $($scope._constants.formElementId).find("#content-meta-form");
-  	var frmScope = formElement.scope();
+    var frmScope = formElement.scope();
+    console.log('form scope', frmScope, formElement);
+    // debugger;
     ecEditor.dispatchEvent("metadata:form:onsuccess", {target: $scope._constants.formElementId, form: frmScope.metaForm});
   };
   $scope.saveMetaData = function (event, object) {
@@ -278,6 +300,7 @@ angular.module('org.ekstep.question', ['org.ekstep.metadataform'])
         });
         var metadataObj = $scope.questionMetaData;    
         metadataObj.category = $scope.category;
+        console.log('scope.category', $scope.category);
         // TODO: questionCount should be sent from unit template controllers. Currently it is hardcoded to 1.
         data.config = { "metadata": metadataObj, "max_time": 0, "max_score": $scope.questionData.max_score, "partial_scoring": $scope.questionData.isPartialScore, "layout": $scope.questionData.templateType, "isShuffleOption" : $scope.questionData.isShuffleOption, "questionCount": 1, "evalUnordered": $scope.questionData.evalUnordered};
         data.media = $scope.questionCreationFormData.media;
@@ -327,6 +350,7 @@ angular.module('org.ekstep.question', ['org.ekstep.metadataform'])
           metadata.options = dynamicOptions;
           break;
         }
+        console.log('metadata', metadata);
         $scope.qFormData = {
           "request": {
             "assessment_item": {
@@ -430,6 +454,7 @@ angular.module('org.ekstep.question', ['org.ekstep.metadataform'])
     $scope.$safeApply();
   };
   $scope.changeLayout = function(templateType){
+    debugger;
     if($scope.questionData.templateType != templateType){
       $scope.questionData.templateType = templateType;
       $scope.showPreview();
@@ -462,6 +487,7 @@ angular.module('org.ekstep.question', ['org.ekstep.metadataform'])
   	})
   }
   $scope.generateTelemetry = function(data, event) {
+    console.log('telemetry',data);
   	if (data) ecEditor.getService('telemetry').interact({
   		"type": data.type,
   		"id": data.id,

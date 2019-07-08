@@ -1,0 +1,86 @@
+{
+    "id": "org.ekstep.questionunit.survey",
+    "ver": "1.0",
+    "author": "Jagadish",
+    "title": "Survey2",
+    "description": "Question Unit Plugin that enables creation of multiple choice questions.",
+    "publishedDate": "",
+    "languages": [
+        "English"
+    ],
+    "categories": [],
+    "keywords": [
+        "mcqplugin"
+    ],
+    "editor": {
+        "main": "editor/plugin.js",
+        "dependencies": [{
+                "type": "plugin",
+                "plugin": "org.ekstep.questionunit",
+                "ver": "1.0"
+            },
+            {
+                "type": "js",
+                "src": "editor/controllers/survey-controller.js"
+            },
+            {
+                "type": "css",
+                "src": "editor/styles/style.css"
+            }
+        ]
+    },
+    "templates": [{
+        "id": "survey",
+        "thumbnail": "editor/assets/mcq-horizontal.png",
+        "title": "Survey2",
+        "disc": "Multiple choice items consist of a stem, the correct answer, keyed alternative, and distractors. The stem is the beginning part of the item that presents the item as a problem to be solved, a question asked of the respondent, or an incomplete statement to be completed, as well as any other relevant information.",
+        "category": "MCQ",
+        "editor": {
+            "templateURL": "editor/templates/survey_template.html",
+            "controllerURL": "editor/controllers/survey_controller.js",
+            "template": "survey",
+            "controller": "QuestionFormController"
+        }
+    }],
+    "renderer": {
+        "main": "renderer/plugin.js",
+        "dependencies": [{
+                "type": "css",
+                "src": "renderer/styles/style.css"
+            },
+            {
+                "type": "css",
+                "src": "renderer/styles/horizontal_and_vertical.css"
+            },
+            {
+                "type": "js",
+                "src": "renderer/template/mcq-layouts.js"
+            },
+            {
+                "type": "js",
+                "src": "renderer/template/template_controller.js"
+            },
+            {
+                "type": "image",
+                "src": "renderer/assets/tick_icon.png",
+                "assetId": "org.ekstep.questionunit.survey.tick_icon.png"
+            },
+            {
+                "type": "image",
+                "src": "renderer/assets/audio-icon2.png",
+                "assetId": "org.ekstep.questionunit.survey.audio-icon2.png"
+            },
+            {
+                "type": "image",
+                "src": "renderer/assets/music-blue.png",
+                "assetId": "org.ekstep.questionunit.music-blue.png"
+            }
+        ]
+    },
+    "dependencies": [{
+        "plugin": "org.ekstep.questionunit",
+        "ver": "1.0",
+        "type": "plugin",
+        "scope": "all"
+    }]
+}

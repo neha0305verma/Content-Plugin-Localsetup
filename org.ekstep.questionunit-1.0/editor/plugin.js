@@ -51,6 +51,7 @@ org.ekstep.contenteditor.questionUnitPlugin = org.ekstep.contenteditor.basePlugi
     var instance = this;
     ecEditor.dispatchEvent(this.manifest.id + ":validateform", function(isValid, data) {
       instance._data = data;
+      console.log('is vlaid', isValid,data);
       if(_.isFunction(callback)) {
         callback(isValid,data);
       }

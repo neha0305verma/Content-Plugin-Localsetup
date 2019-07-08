@@ -66,12 +66,15 @@ org.ekstep.contenteditor.metadataPlugin.extend({
      * @description   - to render metadata form
      */
     invoke: function (event, config) {
+        // debugger;
+        console.log('config', config);
         var instance = this;
         instance.model = config.metadata;
         instance.editMode = config.editMode;
         instance.startLoadTime = new Date();
         if (!this.isConfigurationsExists(config.subType, config.action)) {
             this.getConfigurations(config, function (error, res) {
+                console.log('res', res, error, config);
                 if (res) {
                     instance.mapResponse(config.subType, config.action, { resourceBundle: res.resourceBundle, framework: res.framework.data.result.framework, formConfig: res.config.data.result.form.data })
                     instance.renderForm(config.popup, { resourceBundle: res.resourceBundle, framework: res.framework.data.result.framework, formConfig: res.config.data.result.form.data })
@@ -100,6 +103,8 @@ org.ekstep.contenteditor.metadataPlugin.extend({
      *                    Which is currently handles 'review` and `save' action
      */
     successAction: function (event, data) {
+        console.log('data in plugin', data);
+        // debugger;
         var instance = this
         if (data.isValid) {
             if (data.formData.metaData.mimeType === 'application/vnd.ekstep.content-collection') this.updateState(data.formData)

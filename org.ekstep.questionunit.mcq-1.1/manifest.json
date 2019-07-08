@@ -45,7 +45,7 @@
             "category": "MCQ",
             "editor": {
                 "templateURL": "editor/templates/horizontal_template.html",
-                "controllerURL": "editor/controllers/horizontal_controller.js",
+                "controllerURL": "editor/controllers/mcq-controller.js",
                 "template": "horizontalMCQ",
                 "controller": "QuestionFormController"
             }

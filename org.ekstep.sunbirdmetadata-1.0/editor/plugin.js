@@ -100,6 +100,8 @@ org.ekstep.contenteditor.metadataPlugin.extend({
      */
     successAction: function(event, data) {
         var instance = this
+        debugger;
+        console.log('data in plugin', data);
         if (data.isValid) {
             if (data.formData.metaData.mimeType === 'application/vnd.ekstep.content-collection') this.updateState(data.formData)
                 // Callback function

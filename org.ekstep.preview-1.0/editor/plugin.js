@@ -63,7 +63,8 @@ org.ekstep.contenteditor.basePlugin.extend({
     /**     
      *   @memberof preview
      */
-    showPreview: function() {        
+    showPreview: function() {      
+        debugger;  
         console.log(this.previewURL);
         var instance = this;
         var contentService = ecEditor.getService('content');

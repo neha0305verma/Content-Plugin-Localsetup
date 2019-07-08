@@ -29,6 +29,7 @@ org.ekstep.contenteditor.basePlugin.extend({
             };
             stage.addMedia(prevImage);
             console.log(prevImage);*/
+            console.log('manufwst',instance.manifest.id);
             ecEditor.instantiatePlugin(instance.manifest.id, {}, undefined);
         });
 

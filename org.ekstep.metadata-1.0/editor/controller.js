@@ -63,6 +63,11 @@ angular.module('org.ekstep.metadataform', []).controller('metadataForm', ['$scop
     $scope.headerMessage = 'Edit Details'
 
     /**
+     * 
+     */
+    $scope.validationErrorMessage = 'Please provide all required details';
+
+    /**
      * @description          - Which is used to dispatch an event.
      * 
      * @param {String} event - Name of the event.
@@ -73,18 +78,32 @@ angular.module('org.ekstep.metadataform', []).controller('metadataForm', ['$scop
         ecEditor.dispatchEvent(event, data)
     };
 
-
+    $scope.ownerShipFieldConfig = {
+        "code": "ownedBy",
+        "dataType": "text",
+        "description": "Ownership Type",
+        "editable": true,
+        "inputType": "select",
+        "label": "Owner",
+        "range": {},
+        "name": "level",
+        "placeholder": "Owner",
+        "renderingHints": {},
+        "required": true,
+        "visible": true
+    };
 
     /**
      * @description     - It Initialize the dropdown with selected values
      */
-    $scope.initDropdown = function() {
+    $scope.initDropdown = function(object) {
         const DROPDOWN_INPUT_TYPES = ['select', 'multiSelect'];
         _.forEach($scope.fields, function(field) {
             if (_.includes(DROPDOWN_INPUT_TYPES, field.inputType)) {
                 if (field.depends && field.depends.length) {
                     $scope.getAssociations($scope.contentMeta[field.code], field.range, function(associations) {
-                        $scope.applyDependencyRules(field, associations, false);
+                        var target = (object && object.target) ?  object.target : undefined;
+                        $scope.applyDependencyRules(field, associations, false, target);
                     });
                 }
             }
@@ -100,13 +119,22 @@ angular.module('org.ekstep.metadataform', []).controller('metadataForm', ['$scop
      * @param {Object} object - Field information
      */
     $scope.onConfigChange = function(object) {
+        
         if (object.field) {
             var type = (object.field.inputType == 'select' || object.field.inputType == 'multiselect') ? 'change' : 'click'
             object.field && logTelemetry({ type: type, subtype: object.field.inputType, target: {id: object.field.code, type:"field", ver:"" }}, $scope.manifest);
         };
-        var validationStatus = $scope.isValidInputs(object);
-        !validationStatus && $scope.updateErrorMessage(object.form);
+        if(object.target) {
+            object.target = $(object.target).find('#content-meta-form').scope();
+        } else {
+            object.target = $('#content-meta-form').scope();
+        }
+        if(object.target.isSubmit){
+            var validationStatus = $scope.isValidInputs(object);
+            !validationStatus && $scope.updateErrorMessage(object);
+        }
         $scope.updateForm(object);
+        
     }
 
     /**
@@ -117,7 +145,7 @@ angular.module('org.ekstep.metadataform', []).controller('metadataForm', ['$scop
     $scope.updateForm = function(object) {
         if (object.field && object.field.range) {
             $scope.getAssociations(object.value, object.field.range, function(associations) {
-                $scope.applyDependencyRules(object.field, associations, true);
+                $scope.applyDependencyRules(object.field, associations, true, '#'+object.target.tempalteName);
             });
         }
     };
@@ -165,10 +193,11 @@ angular.module('org.ekstep.metadataform', []).controller('metadataForm', ['$scop
      * @param {Boolean} resetSelected  - @default true Which defines while resolving the dependency dropdown
      *                                   Should reset the selected values of the field or not
      */
-    $scope.applyDependencyRules = function(field, associations, resetSelected) {
+    $scope.applyDependencyRules = function(field, associations, resetSelected, target) {
         //reset the depended field first
         // Update the depended field with associated value
         // Currently, supported only for the dropdown values
+        ecEditor.dispatchEvent("editor:field:association", {'field': field, 'resetSelected': resetSelected, 'target': target});
         var dependedValues, groupdFields;
         if (field.depends && field.depends.length) {
             _.forEach(field.depends, function(id) {
@@ -236,6 +265,9 @@ angular.module('org.ekstep.metadataform', []).controller('metadataForm', ['$scop
         return { fixedLayout: fixedLayout, dynamicLayout: dynamicLayout };
     };
 
+    $scope.submit = function(form) {
+        $scope.success(undefined, { form: form, scope: $scope });
+    };
 
     /** 
      * @description - Which is used to invoke an action on click of the submit button.
@@ -250,8 +282,21 @@ angular.module('org.ekstep.metadataform', []).controller('metadataForm', ['$scop
             target: {id:'save',type:"button",ver:""}
         }, $scope.manifest);
         $scope.isSubmit = true;
+        if(object.target === 'undefined') {
+            object.target = $(object.target).find('#content-meta-form').scope();
+        } else {
+            object.target = $('#content-meta-form').scope();
+        }
+        // debugger;
         var validationStatus = $scope.isValidInputs(object);
-        !validationStatus && $scope.updateErrorMessage(object.form);
+        if(!validationStatus){
+            $scope.updateErrorMessage(object);
+            ecEditor.dispatchEvent("org.ekstep.toaster:error", {
+                message: $scope.messages.validationError || $scope.validationErrorMessage,
+                position: 'topCenter',
+                icon: 'fa fa-warning'
+            });
+        }
         var successCB = function(err, res) {
                 if (res) {
                     // success toast message which is already handled by content editor function plugin
@@ -265,41 +310,58 @@ angular.module('org.ekstep.metadataform', []).controller('metadataForm', ['$scop
                     });
                 }
                 $scope.closeThisDialog();
-            }
-            // TODO: Scope of metaform was not lossing  when state was changing
-            // Need to remove the below line of snippet 
-        var template = $('#content-meta-form');
+        }
+        // TODO: Scope of metaform was not lossing  when state was changing
+        // Need to check the below logic
         var form = {};
-        form.metaData = getUpdatedMetadata(template.scope().contentMeta, $scope.originalContentMeta, $scope.fields);
+        form.metaData = getUpdatedMetadata(object.target.contentMeta, $scope.originalContentMeta, $scope.fields);
         form.nodeId = org.ekstep.contenteditor.api.getContext('contentId');
+        if(object.target.contentMeta.ownedBy){
+            var ownerShipData = ecEditor.getContext('user');
+            form.metaData.ownedBy = object.target.contentMeta.ownedBy;
+            if(form.metaData.ownedBy == ownerShipData.id) {
+                form.metaData.ownershipType = ['createdBy'];
+                form.metaData.owner = ownerShipData.name;
+            } else {
+                var oraganizationDetails =  _.find($scope.ownership, ['value', object.target.contentMeta.ownedBy]);
+                form.metaData.ownershipType = ['createdFor'];
+                form.metaData.owner = oraganizationDetails.name;
+            }
+        }
+        form.target = object.target;
         ecEditor.dispatchEvent('editor:form:success', {
             isValid: validationStatus,
             formData: form,
             callback: successCB
         })
+
     };
 
     /**
      * 
      * @description             - Which is used to show an error message to resepective field 
      */
-    $scope.updateErrorMessage = function(form) {
+    $scope.updateErrorMessage = function(formObj) {
+        var form = formObj.form;
         var errorKeys = undefined;
-        _.forEach($scope.fields, function(value, key) {
+
+        var scope = formObj.target;
+        scope.isSubmit = true;
+        _.forEach(scope.fields, function(value, key) {
             if (form[value.code] && form[value.code].$invalid) {
-                $scope.validation[value.code] = {}
+                scope.validation[value.code] = {}
                 switch (_.keys(form[value.code].$error)[0]) {
                     case 'pattern': // When input validation of type is regex
-                        $scope.validation[value.code]["errorMessage"] = value.validation.regex.message;
+                        scope.validation[value.code]["errorMessage"] = value.validation.regex.message;
                         break;
                     case 'required': // When input validation of type is required
-                        $scope.validation[value.code]["errorMessage"] = 'Please Input a value';
+                        scope.validation[value.code]["errorMessage"] = 'Please Input a value';
                         break;
                     case "maxlength": // When input validation of type is max
-                        $scope.validation[value.code]["errorMessage"] = value.validation.max.message;
+                        scope.validation[value.code]["errorMessage"] = value.validation.max.message;
                         break;
                     default:
-                        $scope.validation[value.code]["errorMessage"] = "Invalid Input";
+                        scope.validation[value.code]["errorMessage"] = "Invalid Input";
                 }
             }
         });
@@ -324,11 +386,31 @@ angular.module('org.ekstep.metadataform', []).controller('metadataForm', ['$scop
     $scope.resetSelectedField = function(id) {
         setTimeout(function() {
             $('#_select' + id).dropdown('clear');
-            $scope.contentMeta[id] = undefined;
+            _.forEach($scope.fields, function(field, value) {
+                if (field.code === id && field.dataType === 'list'){
+                    $scope.contentMeta[id] = [];
+                }else if(field.code === id){
+                    $scope.contentMeta[id] = undefined;
+                }
+            });
             $scope.$safeApply();
         }, 0)
     }
 
+    /**
+     * @description          - Fires ImpressionEvent right after popoup loads 
+     *  
+     */    
+    $scope.generateImpression = function(data) {
+        if (data) ecEditor.getService('telemetry').impression({
+            "type": data.type,
+            "subtype": data.subtype || "",
+            "pageid": data.pageid || "",
+            "uri": window.location.href,
+            "duration": data.duration || 0,
+            "visits": []
+             });
+        }
 
     /**
      * 
@@ -377,9 +459,34 @@ angular.module('org.ekstep.metadataform', []).controller('metadataForm', ['$scop
     $scope.init = function() {
         !EventBus.hasEventListener('metadata:form:onsuccess') && ecEditor.addEventListener('metadata:form:onsuccess', $scope.success, $scope);
         !EventBus.hasEventListener('metadata:form:oncancel') && ecEditor.addEventListener('metadata:form:oncancel', $scope.cancel, $scope);
+        !EventBus.hasEventListener('metadata:form:getdata') && ecEditor.addEventListener('metadata:form:getdata', $scope.getScopeMeta, $scope);
         var callbackFn = function(config) {
+            config.fields = config.fields.filter(function( obj ) {
+                return obj.code !== 'ownedBy';
+            });
             $scope.fields = config.fields;
+            $scope.messages = config.messages || {};
             $scope.tempalteName = config.template;
+
+            if($scope.tempalteName  === 'defaultTemplate') {
+                $scope.ownership = [];
+                var ownershipObject = ecEditor.getContext('user');
+                if(ecEditor.getContext('ownershipType')){
+                    if(ecEditor.getContext('ownershipType').indexOf('createdFor') != -1){
+                        Object.keys(ownershipObject.organisations).map(function(key) {
+                            $scope.ownership.push({"value": key, "name" : ownershipObject.organisations[key] });
+                        })
+                    }
+                    if(ecEditor.getContext('ownershipType').indexOf('createdBy') != -1){
+                        $scope.ownership.push({"value":ownershipObject.id, "name": ownershipObject.name });
+                    }
+                }else{
+                    $scope.ownership.push({"value":ownershipObject.id, "name": ownershipObject.name });
+                }
+                $scope.ownerShipFieldConfig['range'] =  $scope.ownership;
+                $scope.fields.push($scope.ownerShipFieldConfig);
+            }
+
             if (_.isUndefined(config.editMode)) {
                 config.editMode = true
             }
@@ -401,6 +508,7 @@ angular.module('org.ekstep.metadataform', []).controller('metadataForm', ['$scop
                 }
             });
             $scope.contentMeta = config.model;
+        
             $scope.originalContentMeta = _.clone($scope.contentMeta);
             var layoutConfigurations = $scope.getLayoutConfigurations();
             $scope.fixedLayoutConfigurations = _.uniqBy(layoutConfigurations.fixedLayout, 'code');
@@ -408,6 +516,7 @@ angular.module('org.ekstep.metadataform', []).controller('metadataForm', ['$scop
             $scope.mapMasterCategoryList($scope.fields);
         }
         ecEditor.dispatchEvent("editor:form:getconfig", callbackFn);
+        $scope.generateImpression({type:"view",subtype:"popup-open", pageid:"metaData"});
     };
 
     $scope.getFixedFieldCode = function(tempalteName) {
@@ -416,24 +525,46 @@ angular.module('org.ekstep.metadataform', []).controller('metadataForm', ['$scop
     }
 
     $scope.isValidInputs = function(object) {
-        var meta = $scope.getScopeMeta();
+        var scope = object.target;
         var isValid = true;
-        var appIconConfig = _.filter($scope.fields, { 'code': 'appicon' })[0];
-        var conceptSelector = _.filter($scope.fields, { 'code': 'concepts' })[0]
-        if (appIconConfig && appIconConfig.visible && appIconConfig.required && !meta['appIcon']) {
+        var appIconConfig = _.filter(scope.fields, { 'code': 'appicon' })[0];
+        var conceptSelector = _.filter(scope.fields, { 'code': 'concepts' })[0]
+        var topicSelector = _.filter(scope.fields, { 'code': 'topic' })[0];
+        if (appIconConfig && appIconConfig.visible && appIconConfig.required && !scope.contentMeta['appIcon']) {
             isValid = false;
         };
-        if (conceptSelector && conceptSelector.required && !_.size(meta['concepts'])) {
+        if (conceptSelector && conceptSelector.required && !_.size(scope.contentMeta['concepts'])) {
+            isValid = false
+        }
+        if (topicSelector && topicSelector.required && !_.size(scope.contentMeta['topic'])) {
             isValid = false
         }
         return (object.form.$valid && isValid) ? true : false
     };
 
-    $scope.getScopeMeta = function() {
-        var template = $('#content-meta-form');
-        return template.scope().contentMeta || {};
-    }
+    $scope.getScopeMeta = function(event, object) {
+        
+        if(object.target) {
+            object.target = $(object.target).find('#content-meta-form').scope();
+        } else {
+            object.target = $('#content-meta-form').scope();
+        }
+        
+        var returnData = object.target.contentMeta || {};
+        object.callback && object.callback(returnData);
+        return returnData;
+    };
 
+    $scope.resetAllFilters = function(){  
+        _.forEach($scope.dynamicLayoutConfigurations, function(field) {
+            $scope.contentMeta[field.code] = [];
+            if(field.code === 'topic')
+                ecEditor.dispatchEvent('editor.topic.change', {key: 'topic', value: []});
+            if(field.code === 'concepts')
+                ecEditor.dispatchEvent('editor.concept.change', {key: 'concepts', value: []});
+            $scope.$safeApply();
+        });
+    }
     $scope.init()
 
 }]);

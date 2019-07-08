@@ -45,6 +45,7 @@ org.ekstep.contenteditor.basePlugin.extend({
      *   @memberof preview
      */
     initPreview: function(event, data) {
+        console.log('data', data);
         this.contentBody = data.contentBody;
         if (data.currentStage) {
             this.contentBody.theme.startStage = ecEditor.getCurrentStage().id;
@@ -100,6 +101,7 @@ org.ekstep.contenteditor.basePlugin.extend({
      *   @memberof preview
      */
     showPreview: function(data) {
+        debugger;
         var instance = this;
         var configuration = instance.getConfiguration();
         var previewContentIframe = ecEditor.jQuery('#previewContentIframe')[0];

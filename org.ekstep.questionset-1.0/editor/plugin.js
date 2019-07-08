@@ -9,15 +9,15 @@
 // Register namespace
 org.ekstep.questionset = {};
 org.ekstep.questionset.EditorPlugin = org.ekstep.contenteditor.basePlugin.extend({
-  type: "org.ekstep.questionset",
+  type: 'org.ekstep.questionset',
   _plugins : [],
   _questions: [],
   _questionPlugin: 'org.ekstep.question',
   _constants: {
-    v1PluginId: "org.ekstep.questionset.quiz",
-    templateId: "horizontalMCQ"
+    v1PluginId: 'org.ekstep.questionset.quiz',
+    templateId: 'horizontalMCQ'
   },
-  _dependencyPlugin: "org.ekstep.questionbank",
+  _dependencyPlugin: 'org.ekstep.questionbank',
   /**
    * Register events.
    * @memberof questionset
@@ -27,19 +27,71 @@ org.ekstep.questionset.EditorPlugin = org.ekstep.contenteditor.basePlugin.extend
 
     //Load dependecny plugin
     var publishedDate = new Date().getTime();
-    ecEditor.loadAndInitPlugin(instance._dependencyPlugin, "1.0", publishedDate);
+    ecEditor.loadAndInitPlugin(instance._dependencyPlugin, '1.0', publishedDate);
     //Loading question unit plugins(MCQ,FTB and MTF) which all having target id 'org.ekstep.questionset'
-    this.loadQSPlugins();
+ this.loadQSPlugins();
+    console.log('p data', this.loadQSPlugins);
     //Get loaded plugins
-    ecEditor.addEventListener(this.manifest.id + ":getPlugins", this.getplugins, this);
+    ecEditor.addEventListener(this.manifest.id + ':getPlugins', this.getplugins, this);
 
-    ecEditor.addEventListener(instance.manifest.id + ":showPopup", instance.openQuestionBank, instance);
-    ecEditor.addEventListener(instance.manifest.id + ":addQS", instance.addQS, instance);
+    ecEditor.addEventListener(instance.manifest.id + ':showPopup', instance.openQuestionBank, instance);
+    ecEditor.addEventListener(instance.manifest.id + ':addQS', instance.addQS, instance);
+    // var pluginsData = [
+    //   {
+    //     'identifier': 'org.ekstep.questionunit.mtf',
+    //     'appIcon': ecEditor.resolvePluginResource(this.manifest.id, this.manifest.ver, 'editor/assets/mtf_app_icon.jpg'),
+    //     'semanticVersion': '1.1',
+    //     'contentType': 'Plugin',
+    //     'objectType': 'Content'
+    //   },
+    //   {
+    //     'identifier': 'org.ekstep.questionunit.mcq',
+    //     'appIcon': ecEditor.resolvePluginResource(this.manifest.id, this.manifest.ver, 'editor/assets/mcq_app_icon.jpg'),
+    //     'semanticVersion': '1.1',
+    //     'contentType': 'Plugin',
+    //     'objectType': 'Content'
+    //   },
+    //   {
+    //     'identifier': 'org.ekstep.questionunit.ftb',
+    //     'appIcon': ecEditor.resolvePluginResource(this.manifest.id, this.manifest.ver, 'editor/assets/ftb_app_icon.jpg'),
+    //     'semanticVersion': '1.0',
+    //     'contentType': 'Plugin',
+    //     'objectType': 'Content'
+    //   },
+    //   {
+    //     'identifier': 'org.ekstep.questionunit.reorder',
+    //     'appIcon': ecEditor.resolvePluginResource(this.manifest.id, this.manifest.ver, 'editor/assets/reorder_app_icon.jpg'),
+    //     'semanticVersion': '1.0',
+    //     'contentType': 'Plugin',
+    //     'objectType': 'Content'
+    //   },
+    //   {
+    //     'identifier': 'org.ekstep.questionunit.sequence',
+    //     'appIcon': ecEditor.resolvePluginResource(this.manifest.id, this.manifest.ver, 'editor/assets/sequence_app_icon.jpg'),
+    //     'semanticVersion': '1.0',
+    //     'contentType': 'Plugin',
+    //     'objectType': 'Content'
+    //   },{
+    //     'identifier': 'org.ekstep.questionunit.survey',
+    //     'appIcon': ecEditor.resolvePluginResource(this.manifest.id, this.manifest.ver, 'editor/assets/sequence_app_icon.jpg'),
+    //     'semanticVersion': '1.0',
+    //     'contentType': 'Plugin',
+    //     'objectType': 'Content'
+    //   },
+    //   {
+    //     'identifier': 'org.ekstep.questionunit.feedback',
+    //     'appIcon': ecEditor.resolvePluginResource(this.manifest.id, this.manifest.ver, 'editor/assets/sequence_app_icon.jpg'),
+    //     'semanticVersion': '1.0',
+    //     'contentType': 'Plugin',
+    //     'objectType': 'Content'
+    //   }
+    // ];
+    // instance.pluginsRespHandler(pluginsData);
   },
   newInstance: function () {
     var instance = this;
     delete this.configManifest;
-    instance.config.btn_edit = "Edit";
+    instance.config.btn_edit = 'Edit';
     var _parent = this.parent;
     this.parent = undefined;
     /*istanbul ignore else*/
@@ -59,12 +111,12 @@ org.ekstep.questionset.EditorPlugin = org.ekstep.contenteditor.basePlugin.extend
     if (_.isArray(this._questions)) {
       this._questions.forEach(function (question) {
         if (question.version == 1) {
-          if (_.has(question, "media")) {
+          if (_.has(question, 'media')) {
             question.media.forEach(function (mediaItem) {
               instance.addMedia(mediaItem);
             })
           }
-          if (_.has(question, "mediamanifest")) {
+          if (_.has(question, 'mediamanifest')) {
             if (_.isArray(question.mediamanifest.media)) {
               question.mediamanifest.media.forEach(function (mediaItem) {
                 instance.addMedia(mediaItem);
@@ -76,7 +128,7 @@ org.ekstep.questionset.EditorPlugin = org.ekstep.contenteditor.basePlugin.extend
           quesMedia.data.config.max_score = question.max_score;
           question.body = JSON.stringify(quesMedia);
           var questionData = quesMedia.data;
-          if (_.isEmpty(questionData.media) && _.has(quesMedia, "media")) {
+          if (_.isEmpty(questionData.media) && _.has(quesMedia, 'media')) {
             questionData.media.forEach(function (mediaItem) {
               mediaItem.src = org.ekstep.contenteditor.mediaManager.getMediaOriginURL(mediaItem.src)
               instance.addMedia(mediaItem);
@@ -88,10 +140,10 @@ org.ekstep.questionset.EditorPlugin = org.ekstep.contenteditor.basePlugin.extend
     // Add stage object
     var stageImage = ecEditor.resolvePluginResource(this.manifest.id, this.manifest.ver, 'editor/assets/quizimage.png');
     instance.addMedia({
-      id: "QuizImage",
+      id: 'QuizImage',
       src: stageImage,
-      assetId: "QuizImage",
-      type: "image",
+      assetId: 'QuizImage',
+      type: 'image',
       preload: true
     });
 
@@ -116,13 +168,13 @@ org.ekstep.questionset.EditorPlugin = org.ekstep.contenteditor.basePlugin.extend
       top: 33,
       left: 105
     });
-    qCount = new fabric.Text(qCount + "  Questions,", {
+    qCount = new fabric.Text(qCount + '  Questions,', {
       fontSize: 12,
       fill: 'black',
       top: 50,
       left: 105
     });
-    maxscore = new fabric.Text(maxscore + " Marks", {
+    maxscore = new fabric.Text(maxscore + ' Marks', {
       fontSize: 12,
       fill: 'black',
       top: 50,
@@ -153,21 +205,21 @@ org.ekstep.questionset.EditorPlugin = org.ekstep.contenteditor.basePlugin.extend
     var instance = this,
       questionSets = {},
       controller = {
-        "questionnaire": {},
-        "template": {}
+        'questionnaire': {},
+        'template': {}
       };
     var questionTemplate = Object.assign({}, question);
     delete questionTemplate.template;
     delete questionTemplate.mediamanifest;
-    questionTemplate["template"] = question.template[0].id;
+    questionTemplate['template'] = question.template[0].id;
     questionSets[question.identifier] = [questionTemplate];
-    controller.questionnaire["items"] = questionSets;
-    controller.questionnaire["item_sets"] = [{
-      "count": instance.config.total_items,
-      "id": question.identifier
+    controller.questionnaire['items'] = questionSets;
+    controller.questionnaire['item_sets'] = [{
+      'count': instance.config.total_items,
+      'id': question.identifier
     }];
-    controller["questionnaire"] = ecEditor._.assign(controller.questionnaire, instance.config);
-    controller["template"] = ecEditor._.assign(question.template);
+    controller['questionnaire'] = ecEditor._.assign(controller.questionnaire, instance.config);
+    controller['template'] = ecEditor._.assign(question.template);
     return JSON.stringify(controller);
   },
   toECML: function () {
@@ -192,8 +244,8 @@ org.ekstep.questionset.EditorPlugin = org.ekstep.contenteditor.basePlugin.extend
             },
             config: {
               __cdata: JSON.stringify({
-                "type": "items",
-                "var": "item"
+                'type': 'items',
+                'var': 'item'
               })
             }
           }
@@ -265,17 +317,17 @@ org.ekstep.questionset.EditorPlugin = org.ekstep.contenteditor.basePlugin.extend
           break;
         case 'total_items':
           this.config.total_items = value;
-          this.editorObj._objects[1]._objects[1].setText(value + "/" + itemLength + "Questions,");
+          this.editorObj._objects[1]._objects[1].setText(value + '/' + itemLength + 'Questions,');
           break;
         case 'max_score':
           this.config.max_score = value;
-          this.editorObj._objects[1]._objects[2].setText(value + "Marks");
+          this.editorObj._objects[1]._objects[2].setText(value + 'Marks');
           break;
         case 'shuffle_questions':
           this.config.shuffle_questions = value;
           if(value){
             var maxscore = this.config.shuffle_questions ? this.data.length : this.config.max_score; 
-            this.editorObj._objects[1]._objects[2].setText(maxscore + " Marks");
+            this.editorObj._objects[1]._objects[2].setText(maxscore + ' Marks');
             _.each(instance.data,function(val,key){
               if(val.body == undefined){
                 instance.data[key].max_score = 1;
@@ -288,7 +340,7 @@ org.ekstep.questionset.EditorPlugin = org.ekstep.contenteditor.basePlugin.extend
               }
             });
             this.config.max_score = instance.data.length;
-            ecEditor.dispatchEvent("org.ekstep.toaster:info", {
+            ecEditor.dispatchEvent('org.ekstep.toaster:info', {
               title: 'Each question will carry equal weightage of 1 mark when using Shuffle. To provide different weightage to individual questions please turn off Shuffle.',
               position: 'topCenter',
             });
@@ -360,16 +412,16 @@ org.ekstep.questionset.EditorPlugin = org.ekstep.contenteditor.basePlugin.extend
     var qsManifest = org.ekstep.pluginframework.pluginManager.getPluginManifest(instance.manifest.id);
     var qsVesrion = qsManifest.ver.split('.')[0];
     var data = {
-      "request": {
-        "filters": {
-          "objectType": ["Content"],
-          "contentType": ["Plugin"],
-          "targets.id": instance.manifest.id,
-          "targets.ver": {'<=': Number(qsVesrion)},
-          "status": "Live"
+      'request': {
+        'filters': {
+          'objectType': ['Content'],
+          'contentType': ['Plugin'],
+          'targets.id': instance.manifest.id,
+          'targets.ver': {'<=': Number(qsVesrion)},
+          'status': 'Live'
         },
-        "limit": 50,
-        "fields": ['contentType','semanticVersion','appIcon']
+        'limit': 50,
+        'fields': ['contentType','semanticVersion','appIcon']
       }
     };
 
@@ -378,6 +430,7 @@ org.ekstep.questionset.EditorPlugin = org.ekstep.contenteditor.basePlugin.extend
       var url = ecEditor.getConfig('pluginsRepoUrl') ? ecEditor.getConfig('pluginsRepoUrl') : undefined; 
       ecEditor.getService('search').pluginsSearch(url, data, function(err, resp) {
        if(!err){ 
+         console.log('resp', resp,data);
           pluginsData = resp.data.result.content;
           instance.pluginsRespHandler(pluginsData);
        }
@@ -393,14 +446,15 @@ org.ekstep.questionset.EditorPlugin = org.ekstep.contenteditor.basePlugin.extend
   },
   pluginsRespHandler: function(pluginsData){
     var instance = this;
+    // debugger;
     instance._plugins = pluginsData;
     var plugins = [];
     ecEditor._.forEach(pluginsData, function(value, key) { // eslint-disable-line no-unused-vars
       if (value) {
         var obj = {
-          "id": value.identifier,
-          "ver": value.semanticVersion,
-          "type": 'plugin'
+          'id': value.identifier,
+          'ver': value.semanticVersion,
+          'type': 'plugin'
         }
         plugins.push(obj);
       }

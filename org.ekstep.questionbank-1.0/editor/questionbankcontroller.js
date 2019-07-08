@@ -179,6 +179,7 @@ angular.module('createquestionapp', [])
           if (resp.data.result.count > 0) {
             $scope.questions = resp.data.result.items;
             savedQuestions = $scope.questions;
+            console.log('saved questions', $scope.questions);
             $scope.resultNotFound = resp.data.result.count;
             for (var i = 0; i < $scope.selectedQuestions.length; i++) {
               for (var j = 0; j < $scope.questions.length; j++) {
@@ -282,7 +283,7 @@ angular.module('createquestionapp', [])
         action: 'question-filter-view',
         subType: 'questions',
         framework: ecEditor.getContext('framework'),
-        rootOrgId: ecEditor.getContext('channel'),
+        rootOrgId: "0127053482034872320",
         type: 'content',
         popup: false,
         metadata: filterMetaData
